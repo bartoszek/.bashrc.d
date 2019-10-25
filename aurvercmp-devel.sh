@@ -48,6 +48,8 @@ set_status "Nan" 'Probing AUR VCS packages...'
 ## End: Add screen status bar
 ##
 
+## Test if /tmp is allowing sudo file execution. If not remount.
+mount -l -t tmpfs|grep -q "/tmp .*nosuid" && sudo mount -o remount,suid,size=32G /tmp/
 shopt -s lastpipe
 ok=()
 fail=()
