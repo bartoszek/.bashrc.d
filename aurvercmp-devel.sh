@@ -88,7 +88,10 @@ stop() {
 }
 
 start "total"
-readarray pkgs < <(aur vercmp-devel|(((edit)) && vipe || cat)|cut -d: -f1)
+start "vercmp"
+#readarray pkgs < <(aur vercmp-devel|(((edit)) && vipe || cat)|cut -d: -f1)
+readarray pkgs < <(output=$(aur vercmp-devel) && (((edit)) && vipe <<<"$output" || echo "$output")|cut -d: -f1)
+stop "vercmp"
 total=${#pkgs[@]}
 echo packages:${pkgs[@]} total:"$total" >&2
 for pkg in "${pkgs[@]}"
