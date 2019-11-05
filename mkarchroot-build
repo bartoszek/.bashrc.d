@@ -1,13 +1,13 @@
 #!/bin/bash
-# override pacman-git with stock pacman.
-[ "$1" == "--stock-pacman" ] && _stock_pacman=1 && shift
-nspawn="arch-nspawn /tmp/root --bind-ro=/home/_pacman_cache/ --bind=/home/_ccache:/home/user/.ccache --bind=$(pwd):/build/$(basename $PWD)"
+# override stock pacman.with.pacman-git
+[ "$1" == "--dev" ] && _dev_pacman=1 && shift
+nspawn="arch-nspawn /tmp/root --bind-ro=/home/_pacman_cache/ --bind=/home/_ccache:/home/user/.ccache --bind=$(pwd):/build/$(basename "$PWD")"
 [ -d /tmp/root ] || {
   mkarchroot /tmp/root base-devel
 # Installing pacman-git requires reapplying pacman.conf modification.
   $nspawn bash -xec 'echo -e "[aur]\nSigLevel = Optional TrustAll\nServer = file:///home/_pacman_cache/aur" >> /etc/pacman.conf'
-  ((_stock_pacman)) || $nspawn bash -xec 'pacman -S --noconfirm --ask=4 pacman-git'
-  ((_stock_pacman)) || $nspawn bash -xec 'echo -e "[aur]\nSigLevel = Optional TrustAll\nServer = file:///home/_pacman_cache/aur" >> /etc/pacman.conf'
+  ((_dev_pacman)) && $nspawn bash -xec 'pacman -S --noconfirm --ask=4 pacman-git'
+  ((_dev_pacman)) && $nspawn bash -xec 'echo -e "[aur]\nSigLevel = Optional TrustAll\nServer = file:///home/_pacman_cache/aur" >> /etc/pacman.conf'
 # Configure chroot
   $nspawn bash -xec 'useradd user'
   $nspawn bash -xec 'echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers'
@@ -15,12 +15,13 @@ nspawn="arch-nspawn /tmp/root --bind-ro=/home/_pacman_cache/ --bind=/home/_ccach
   $nspawn bash -xec 'sed -i "s/tar\.xz/tar\.zst/" /etc/makepkg.conf'
   $nspawn bash -xec 'pacman -Sy'
   $nspawn bash -xec 'pacman -S --noconfirm vim moreutils man git'
-  ((_stock_pacman)) || $nspawn bash -xec 'pacman -S --noconfirm pyalpm-git aur/namcap makepkg-optimize'
+  ((_dev_pacman)) && $nspawn bash -xec 'pacman -S --noconfirm pyalpm-git aur/namcap makepkg-optimize'
 # Configure user
 # $nspawn bash -xec 'mkdir /home/user'
   $nspawn bash -xec 'chown -R user:user /home/user'
   $nspawn bash -xec 'chpasswd <<<"user:user" '
-  $nspawn --user=user bash -xvec "echo \"cd /build/$(basename $PWD)\" >> ~/.bashrc"
+  $nspawn --user=user bash -xvec "echo \"cd /build/$(basename "$PWD")\" >> ~/.bashrc"
   }
 # Run bash or command form cli
-(($#)) && $nspawn --user=user bash -xvec "cd /build/$(basename $PWD); $*; bash" || $nspawn --user=user bash
+(($#)) && $nspawn --user=user bash -xvec "cd /build/$(basename "$PWD"); $*; bash"
+(($#)) || $nspawn --user=user bash
