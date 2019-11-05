@@ -8,6 +8,7 @@
 declare status_bar=1  # use screen to show status bar
 declare edit=1        # use vipe to edit packages to be updated
 declare debug=0       # 1: output debug info, 2: pouse after every package update
+[ $# -gt 0 ] && export $@
 
 ##
 ## Start: Add screen status bar
@@ -41,8 +42,6 @@ else
     echo [$1/$total] $2 >&2
   }
 fi 
-total="Nan"
-set_status "Nan" 'Probing AUR VCS packages...' 
 
 ##
 ## End: Add screen status bar
@@ -87,10 +86,47 @@ stop() {
   ((debug>1)) && { echo "Press enter to continue" >&2; read; }
 }
 
+vercmp-devel() {
+  XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
+  AURDEST=${AURDEST:-$XDG_CACHE_HOME/aurutils/sync}
+  AURVCS=${AURVCS:-.*-(bzr|git|hg|svn)$}
+
+  total="Nan"
+  set_status "Nan" 'Probing AUR VCS packages...' 
+
+  db_tmp=$(mktemp)
+  latest_tmp=$(mktemp)
+  trap 'rm -rf "$db_tmp" "$latest_tmp"' EXIT
+
+  alias get_latest_revision="| xargs -r aur srcver"
+
+  aur repo --list "$@" >"$db_tmp"
+
+  if cd "$AURDEST"; then
+    mapfile -t vcs < <(awk -v "mask=$AURVCS" '$1 ~ mask {print $1}' "$db_tmp"|grep -Fxf - <(printf '%s\n' *))
+    total=${#vcs[@]}
+    local i=0
+    local limit=2
+    for pkg in "${vcs[@]}"; do
+      [ $(jobs -p|wc -l) -gt $limit ] && wait -n
+      ((i++))
+      { 
+        set_status $i "Probing $pkg..."
+        aur srcver "$pkg" >> "$latest_tmp"
+      } &
+    done  
+    wait
+    aur vercmp -p "$latest_tmp" <"$db_tmp"
+  fi
+}
+
+total="Nan"
+set_status "Nan" 'Probing AUR VCS packages...' 
+
 start "total"
 start "vercmp"
 #readarray pkgs < <(aur vercmp-devel|(((edit)) && vipe || cat)|cut -d: -f1)
-readarray pkgs < <(output=$(aur vercmp-devel) && (((edit)) && vipe <<<"$output" || echo "$output")|cut -d: -f1)
+readarray pkgs < <(output=$(vercmp-devel) && (((edit)) && vipe <<<"$output" || echo "$output")|cut -d: -f1)
 stop "vercmp"
 total=${#pkgs[@]}
 echo packages:${pkgs[@]} total:"$total" >&2
