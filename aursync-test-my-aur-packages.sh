@@ -114,6 +114,10 @@ for pkg in "${pkgs[@]}"
   done
 stop "total"
 tee -a $HOME/AUR/.aursync-test.log < <(
+((debug)) && \
+  for key in ${!start_time[@]} ; do 
+    echo $key: start_time=${start_time[$key]}, stop_time=${stop_time[$key]}, start_ccache=${start_ccache[$key]}, stop_ccache=${stop_ccache[$key]} >&2
+  done 
 padding_pkgname=$(for key in ${!stop_time[@]}; do wc -c <<<"$key";done|sort -n|tail -n1)
 export LC_ALL=C # fix `bc` decimal format not working with `printf` when local decimal separator isn't dot.
 printf "%8s\t%${padding_pkgname}s\t%6s%% (%4s:%-4s) %7s\n" "duration" "package name" "rate" "hit" "miss" "bps"
