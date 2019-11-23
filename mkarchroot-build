@@ -1,6 +1,17 @@
 #!/bin/bash
-# override stock pacman.with.pacman-git
-[ "$1" == "--dev" ] && _dev_pacman=1 && shift
+while true; do
+  case "$1" in
+    --dev)
+      # override stock pacman.with.pacman-git
+      _dev_pacman=1
+      shift;;
+    --date=*)
+      _repo_date=${1#*=}
+      shift;;
+    *)
+      break;;
+  esac
+done
 nspawn="arch-nspawn /tmp/root --bind-ro=/home/_pacman_cache/ --bind=/home/_ccache:/home/user/.ccache --bind=$(pwd):/build/$(basename "$PWD")"
 [ -d /tmp/root ] || {
   mkarchroot /tmp/root base-devel
