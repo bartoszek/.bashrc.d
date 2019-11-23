@@ -1,4 +1,29 @@
 #!/bin/bash
+# vim:set ts=2 sw=2 et:
+
+# ## Create Arch root for building a PKGBUILD
+#  # Options:
+#  --dev: use development version of pacman,pyalpm,namcap
+#  --date=yyyy/mm/dd: use archived archilinux repository.
+#  # How it works:
+#    * create Arch root in /tmp/root
+#    * install `base-devel` packages group in /tmp/root
+#    * mount $PWD as /build, write enabled
+#    * mount /home/_pacman_cache, as itself, read-only
+#    * mount /home/_ccache, as /home/user/.ccache, write enabled
+#    * enable X11 applications, mount /tmp/.X11-unix, read-only
+#    * add `aur` repository located in `/home/_pacman_cache/aur`
+#    * add new user: `user`
+#    * add `user` to sudoers and allow executing all commands without password
+#    * add `-j8` to MAKEFLAGS
+#    * switch compression scheme to zstd
+#    * update pacman repository db
+#    * install: vim, moreutils, man, git, makepkg-optimize
+#    * create `user` home: `/usr/home` and set correct permissions
+#    * add `user` password=`user` (need for `sudo` to work)
+#    * make source we starts in `/build/$$$` by adding it to `~/.bashrc`
+#    * boot and run $@ if provided, otherwise run `bash`
+
 
 #Cleanups.
   tmp=$(mktemp -d)
