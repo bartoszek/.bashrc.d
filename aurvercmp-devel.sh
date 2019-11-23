@@ -1,5 +1,15 @@
 #!/bin/bash
 
+#ToDo:
+# * add cpu utilization statistics (use $EPOCHREALTIME or /usr/bin/time -f {format} -o {output} $$)
+# * probe pkgver in tmpfs for speed and reduce disk wear.
+# * time `makepkg` stages in `aur sync` call (pipe to `ts -s [%.T]`|grep -P (prepare|build|package) )
+# * refactor stop(): rename elapsed variable.
+# * add info header to script (look CPF.sh)
+# * add inline doc to functions
+# * shellcheck fixes
+# * allow for script to be sourced for function testing.
+
 #unset ok fail; for pkg in `aur ^Crcmp-devel|vipe|cut -d: -f1`; do aursync-ccache --no-view $pkg && ok+=($pkg) || fail+=($pkg); done ; echo pkg-ok=${ok[@]}; echo pkg-fail=${fail[@]}
 
 ##
