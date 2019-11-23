@@ -1,10 +1,10 @@
 #!/bin/bash
 ##
-## Configuration (1=eneble, 0=disable)
+## Configuration (1=enable, 0=disable)
 ##
 declare status_bar=1  # use screen to show status bar
 declare edit=1        # use vipe to edit packages to be updated
-declare debug=0       # 1: output debug info, 2: pouse after every package update
+declare debug=0       # 1: output debug info, 2: pause after every package update
 declare redownload=0  # 0: use ~/.cache/aurutils/cache 1: use /tmp/aurutils/cache
 
 ##
@@ -45,7 +45,7 @@ set_status Nan 'Initializing build env...'
 ## End: Add screen status bar
 ##
 
-# remount /tmp biger and with suid
+## Test if /tmp is allowing sudo file execution. If not remount.
 mount -l -t tmpfs|grep -q "/tmp .*nosuid" && sudo mount -o remount,suid,size=32G /tmp/
 
 shopt -s lastpipe
