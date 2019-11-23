@@ -3,11 +3,11 @@
 #unset ok fail; for pkg in `aur ^Crcmp-devel|vipe|cut -d: -f1`; do aursync-ccache --no-view $pkg && ok+=($pkg) || fail+=($pkg); done ; echo pkg-ok=${ok[@]}; echo pkg-fail=${fail[@]}
 
 ##
-## Configuration (1=eneble, 0=disable)
+## Configuration (1=enable, 0=disable)
 ##
 declare status_bar=1  # use screen to show status bar
 declare edit=1        # use vipe to edit packages to be updated
-declare debug=0       # 1: output debug info, 2: pouse after every package update
+declare debug=0       # 1: output debug info, 2: pause after every package update
 [ $# -gt 0 ] && export $@
 
 ##
