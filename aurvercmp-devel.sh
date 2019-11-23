@@ -85,16 +85,18 @@ start() { start_time[$1]=$(now); start_ccache[$1]=$(now_ccache); ((debug)) && ec
 stop() {
   stop_time[$1]=$(now)
   stop_ccache[$1]=$(now_ccache)
-  ((debug)) && echo $1: stop=${stop_time[$1]},ccache=${stop_ccache[$1]} >&2
-  diff_time=$(datediff ${start_time[$1]} ${stop_time[$1]} -f "%H:%0M.%0S")
-  ((debug)) && echo $1: diff_time=$diff_time >&2
-  diff_ccache=$(paste <(echo "${stop_ccache[$1]}") <(echo "${start_ccache[$1]}")|while read a b; do echo $((a-b));done;)
-  ((debug)) && echo $1: diff_ccache=$diff_ccache >&2
-  rate_ccache=$(echo $diff_ccache|(read hit miss; bc -l <<<"scale=2; if (($hit+$miss)>0) $hit/($hit+$miss)*100 else 0";))
-  ((debug)) && echo $1: rate_ccache=$rate_ccache >&2
-  elapsed+=("$diff_time $1 ${rate_ccache} ${diff_ccache}")
-  ((debug)) && echo $1: elapsed=${elapsed[@]} >&2
-  ((debug>1)) && { echo "Press enter to continue" >&2; read; }
+  ((debug)) && echo "$1: stop=${stop_time[$1]},ccache=${stop_ccache[$1]}" >&2
+  diff_time=$(datediff "${start_time[$1]}" "${stop_time[$1]}" -f "%H:%0M:%0S")
+  ((debug)) && echo "$1: diff_time=$diff_time" >&2
+  diff_ccache=($(paste <(echo "${stop_ccache[$1]}") <(echo "${start_ccache[$1]}")|while read -r a b; do echo $((a-b));done;))
+  ((debug)) && echo "$1: diff_ccache=${diff_ccache[*]}" >&2
+  rate_ccache=$(echo "${diff_ccache[@]}"|(read -r hit miss; bc -l <<<"if (($hit+$miss)>0) $hit/($hit+$miss)*100 else 0";))
+  ((debug)) && echo "$1: rate_ccache=$rate_ccache" >&2
+  bps=$(bc -l <<<"$(tr ' ' '+'<<<"${diff_ccache[@]}"|bc)/$(date -u -d "1970-1-1 $diff_time" +%s)"|sed 's/^\./0\./')
+  ((debug)) && echo "$1: bps=$bps" >&2
+  elapsed+=("$diff_time $1 ${rate_ccache} ${diff_ccache[*]} $bps")
+  ((debug)) && echo "$1: elapsed=${elapsed[-1]}" >&2
+  ((debug>1)) && read -rs -p "Press enter to continue"
 }
 
 vercmp-devel() {
@@ -163,8 +165,9 @@ stop "total"
     echo $key: start_time=${start_time[$key]}, stop_time=${stop_time[$key]}, start_ccache=${start_ccache[$key]}, stop_ccache=${stop_ccache[$key]} >&2
   done 
 padding_pkgname=$(for key in ${!stop_time[@]}; do wc -c <<<"$key";done|sort -n|tail -n1)
-printf "%8s\t%${padding_pkgname}s\t%6s%% (%4s:%-4s)\n" "duration" "package name" "rate" "hit" "miss"
-printf "%8s\t%${padding_pkgname}s\t%6s%% (%4s:%-4s)\n" ${elapsed[@]}|datesort -i "%H:%M.%S"
+export LC_ALL=C # fix `bc` decimal format not working with `printf` when local decimal separator isn't dot.
+printf "%8s\t%${padding_pkgname}s\t%6s%% (%4s:%-4s) %7s\n" "duration" "package name" "rate" "hit" "miss" "bps"
+printf "%8s\t%${padding_pkgname}s\t%6.2f%% (%4d:%-4d) %7.2f\n" ${elapsed[@]}|datesort -i "%H:%M.%S"
 echo pkg_ok=${ok[@]}
 echo pkg_fail=${fail[@]} 
 
