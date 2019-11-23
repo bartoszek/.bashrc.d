@@ -12,6 +12,18 @@ while true; do
       break;;
   esac
 done
+
+# Test if _repo_date resolve to correct archlinux archive url.
+[ -v _repo_date ] && {
+  if curl -s https://archive.archlinux.org/repos/"${_repo_date}"/|hq head text|grep -q 404
+  then
+    echo "Error: --date=${_repo_date} format should be yyyy/mm/dd"
+    exit 1
+  else
+    _mirror_url="https://archive.archlinux.org/repos/${_repo_date}/"
+  fi
+}
+
 nspawn="arch-nspawn /tmp/root --bind-ro=/home/_pacman_cache/ --bind=/home/_ccache:/home/user/.ccache --bind=$(pwd):/build/$(basename "$PWD")"
 [ -d /tmp/root ] || {
   mkarchroot /tmp/root base-devel
