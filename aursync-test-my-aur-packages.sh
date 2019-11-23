@@ -89,11 +89,11 @@ stop() {
 }
 
 start "total"
-start "vercmp"
+start "aurrpc"
 readarray -t pkgs < <(auracle --searchby maintainer -F {pkgbase} search bartus|uniq)
 readarray -t -O ${#pkgs[@]} pkgs < <(curl -sSL 'https://aur.archlinux.org/packages/?SeB=c&PP=250&K=bartus'|hq td:first-of-type text)
 readarray -t pkgs < <(printf "%s\n" "${pkgs[@]}"|(((edit)) && vipe || cat))
-stop "vercmp"
+stop "aurrpc"
 total=${#pkgs[@]}
 echo packages:${pkgs[@]} total:"$total" >&2
 for pkg in "${pkgs[@]}"
