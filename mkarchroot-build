@@ -14,14 +14,15 @@ nspawn="arch-nspawn /tmp/root --bind-ro=/home/_pacman_cache/ --bind=/home/_ccach
   $nspawn bash -xec 'echo MAKEFLAGS="-j8" >> /etc/makepkg.conf'
   $nspawn bash -xec 'sed -i "s/tar\.xz/tar\.zst/" /etc/makepkg.conf'
   $nspawn bash -xec 'pacman -Sy'
-  $nspawn bash -xec 'pacman -S --noconfirm vim moreutils man git'
-  ((_dev_pacman)) && $nspawn bash -xec 'pacman -S --noconfirm pyalpm-git aur/namcap makepkg-optimize'
+  $nspawn bash -xec 'pacman -S --noconfirm vim moreutils man git makepkg-optimize'
+  ((_dev_pacman)) && $nspawn bash -xec 'pacman -S --noconfirm pyalpm-git aur/namcap'
 # Configure user
 # $nspawn bash -xec 'mkdir /home/user'
   $nspawn bash -xec 'chown -R user:user /home/user'
   $nspawn bash -xec 'chpasswd <<<"user:user" '
   $nspawn --user=user bash -xvec "echo \"cd /build/$(basename "$PWD")\" >> ~/.bashrc"
-  }
+}
 # Run bash or command form cli
 (($#)) && $nspawn --user=user bash -xvec "cd /build/$(basename "$PWD"); $*; bash"
 (($#)) || $nspawn --user=user bash
+
