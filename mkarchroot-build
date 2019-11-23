@@ -1,4 +1,9 @@
 #!/bin/bash
+
+#Cleanups.
+  tmp=$(mktemp -d)
+  trap 'rm -rf $tmp' EXIT
+
 while true; do
   case "$1" in
     --dev)
@@ -26,7 +31,13 @@ done
 
 nspawn="arch-nspawn /tmp/root --bind-ro=/home/_pacman_cache/ --bind=/home/_ccache:/home/user/.ccache --bind=$(pwd):/build/$(basename "$PWD")"
 [ -d /tmp/root ] || {
-  mkarchroot /tmp/root base-devel
+  #If "$_repo_date" is defined use it as mirror in pacman.conf
+  [ -v _mirror_url ] && {
+    cp /usr/share/devtools/pacman-extra.conf "$tmp/pacman.conf"
+    sed "s|^Include = /etc/pacman.d/mirrorlist$|Server = ${_mirror_url}\$repo/os/\$arch/|g" -i "$tmp/pacman.conf"
+    mkarchroot_args="-C $tmp/pacman.conf"
+  }
+  mkarchroot $mkarchroot_args /tmp/root base-devel
 # Installing pacman-git requires reapplying pacman.conf modification.
   $nspawn bash -xec 'echo -e "[aur]\nSigLevel = Optional TrustAll\nServer = file:///home/_pacman_cache/aur" >> /etc/pacman.conf'
   ((_dev_pacman)) && $nspawn bash -xec 'pacman -S --noconfirm --ask=4 pacman-git'
