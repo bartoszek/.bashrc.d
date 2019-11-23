@@ -59,12 +59,13 @@ fi
 
 ## Test if /tmp is allowing sudo file execution. If not remount.
 mount -l -t tmpfs|grep -q "/tmp .*nosuid" && sudo mount -o remount,suid,size=32G /tmp/
+
 shopt -s lastpipe
 ok=()
 fail=()
 elapsed=()
 declare -A start_time stop_time start_ccache stop_ccache
-aursync_flags=(-c -D /tmp/$(uname -m))                                                          #clean container build
+aursync_flags=(-c -D /tmp)                                                                      #clean container build
 aursync_flags+=(-T)                                                                             #temp container per pacakge
 aursync_flags+=(-f)                                                                             #force rebuild if package in the cache
 aursync_flags+=(--bind-rw=/home/_ccache:/build/.ccache --makepkg-conf=/etc/makepkg.conf.ccache) #ccache
