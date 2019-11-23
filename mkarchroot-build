@@ -65,6 +65,9 @@ nspawn+=" --bind=$(pwd):/build/$(basename "$PWD")"
 #Allow nspawn to start X11 applications.(https://wiki.archlinux.org/index.php/Chroot#Run_graphical_applications_from_chroot)
 xhost +local:
 
+## Test if /tmp is allowing sudo file execution. If not remount.
+mount -l -t tmpfs|grep -q "/tmp .*nosuid" && sudo mount -o remount,suid,size=32G /tmp/
+
 #Create root if not already exist.
 [ -d /tmp/root ] || {
   #If "$_repo_date" is defined use it as mirror in pacman.conf
