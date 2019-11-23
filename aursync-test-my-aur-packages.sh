@@ -6,6 +6,7 @@ declare status_bar=1  # use screen to show status bar
 declare edit=1        # use vipe to edit packages to be updated
 declare debug=0       # 1: output debug info, 2: pause after every package update
 declare redownload=0  # 0: use ~/.cache/aurutils/cache 1: use /tmp/aurutils/cache
+[ $# -gt 0 ] && export "$@"
 
 ##
 ## Start: Add screen status bar
