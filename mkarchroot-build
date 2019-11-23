@@ -29,7 +29,18 @@ done
   fi
 }
 
-nspawn="arch-nspawn /tmp/root --bind-ro=/home/_pacman_cache/ --bind=/home/_ccache:/home/user/.ccache --bind=$(pwd):/build/$(basename "$PWD")"
+#Define nspawn root path.
+nspawn="arch-nspawn /tmp/root"
+#Define mount nspawn mount options.
+nspawn+=" --bind-ro=/tmp/.X11-unix"
+nspawn+=" --bind-ro=/home/_pacman_cache/"
+nspawn+=" --bind=/home/_ccache:/home/user/.ccache"
+nspawn+=" --bind=$(pwd):/build/$(basename "$PWD")"
+
+#Allow nspawn to start X11 applications.(https://wiki.archlinux.org/index.php/Chroot#Run_graphical_applications_from_chroot)
+xhost +local:
+
+#Create root if not already exist.
 [ -d /tmp/root ] || {
   #If "$_repo_date" is defined use it as mirror in pacman.conf
   [ -v _mirror_url ] && {
