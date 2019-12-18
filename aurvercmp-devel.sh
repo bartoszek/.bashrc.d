@@ -35,7 +35,7 @@ if ((status_bar)); then
     # Disable blanker (cmatrix screensaver)
     echo idle off >> "$screencfg"
     # Start script in a new screen session
-    INTERNAL_INIT_SCRIPT=1 screen -mq -c "$screencfg" bash --norc -c "$0"
+    INTERNAL_INIT_SCRIPT=1 screen -h 100000 -mq -c "$screencfg" bash --norc -c "$0"
     # Store screen return code
     ret=$?
     # Remove temporary screen config file
